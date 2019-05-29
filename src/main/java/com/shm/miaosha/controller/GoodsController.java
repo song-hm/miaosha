@@ -3,7 +3,9 @@ package com.shm.miaosha.controller;
 import com.shm.miaosha.domain.MiaoshaUser;
 import com.shm.miaosha.redis.RedisService;
 import com.shm.miaosha.result.Result;
+import com.shm.miaosha.service.GoodsService;
 import com.shm.miaosha.service.MiaoshaUserService;
+import com.shm.miaosha.vo.GoodsVo;
 import com.shm.miaosha.vo.LoginVo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -12,12 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * @Auther: shm
@@ -35,6 +35,9 @@ public class GoodsController {
     @Autowired
     private RedisService redisService;
 
+    @Autowired
+    private GoodsService goodsService;
+
     @RequestMapping("/to_list")
     public String toList(Model model,MiaoshaUser user
 //            HttpServletResponse response,
@@ -50,20 +53,41 @@ public class GoodsController {
         if (user != null) {
             model.addAttribute("user", user);
         }
+
+        //查询商品列表
+        List<GoodsVo> goodsList = goodsService.listGoodsVo();
+        model.addAttribute("goodsList",goodsList);
         return "goods_list";
     }
 
-    @RequestMapping("/to_detail")
-    public String detail(HttpServletResponse response,Model model,
-                         @CookieValue(value = MiaoshaUserService.COOKIE_NAME_TOKEN,required = false)String cookieToken,
-                         @RequestParam(value = MiaoshaUserService.COOKIE_NAME_TOKEN,required = false)String paramToken){
-        if (StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken)){
-            return "login";
-        }
-        String token = StringUtils.isEmpty(paramToken) ? cookieToken : paramToken;
-        MiaoshaUser user = miaoshaUserService.getByToken(response,token);
+    @RequestMapping("/to_detail/{goodsId}")
+    public String detail(Model model, MiaoshaUser user, @PathVariable("goodsId")long goodsId){
         model.addAttribute("user",user);
-        return "goods_list";
+
+        GoodsVo goods = goodsService.getGoodsVoByGoodsId(goodsId);
+        model.addAttribute("goods",goods);
+
+
+        long startAt = goods.getStartDate().getTime();
+        long endAt = goods.getEndDate().getTime();
+        long now = System.currentTimeMillis();
+
+        int miaoshaStatus = 0;
+        int  remainSeconds = 0;
+        if (now < startAt){//秒杀未开始，倒计时
+            miaoshaStatus =0;
+            remainSeconds = (int)((startAt-now)/1000);
+        }else if (now > endAt){//秒杀结束
+            miaoshaStatus = 2;
+            remainSeconds = -1;
+        }else{//秒杀进行中
+            miaoshaStatus = 1;
+            remainSeconds = 0;
+        }
+        model.addAttribute("miaoshaStatus",miaoshaStatus);
+        model.addAttribute("remainSeconds",remainSeconds);
+
+        return "goods_detail";
     }
 
 }

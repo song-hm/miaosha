@@ -1,0 +1,20 @@
+package com.shm.miaosha.domain;
+
+import lombok.Data;
+
+/**
+ * @Auther: shm
+ * @Date: 2019/5/29
+ * @Description: com.shm.miaosha.domain
+ * @version: 1.0
+ */
+@Data
+public class Goods {
+    private Long id;
+    private String goodsName;
+    private String goodsTitle;
+    private String goodsImg;
+    private String goodsDetail;
+    private Double goodsPrice;
+    private Integer goodsStock;
+}
