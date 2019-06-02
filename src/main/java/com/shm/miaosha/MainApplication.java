@@ -12,14 +12,10 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
  * @version: 1.0
  */
 @SpringBootApplication
-public class MainApplication extends SpringBootServletInitializer {
+public class MainApplication {
 
     public static void main(String[] args) throws Exception{
         SpringApplication.run(MainApplication.class,args);
     }
 
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
-        return super.configure(builder.sources(MainApplication.class));
-    }
 }

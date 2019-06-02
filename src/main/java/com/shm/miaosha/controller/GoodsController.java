@@ -38,6 +38,7 @@ public class GoodsController {
     @Autowired
     private GoodsService goodsService;
 
+    //QPS 243.5  1000*10
     @RequestMapping("/to_list")
     public String toList(Model model,MiaoshaUser user){
         model.addAttribute("user", user);

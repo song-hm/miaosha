@@ -45,6 +45,7 @@ public class MiaoshaController {
     @Autowired
     private MiaoshaService miaoshaService;
 
+    //QPS 258.9  1000*10
     @RequestMapping("/do_miaosha")
     public String miaosha(Model model, MiaoshaUser user,
                           @RequestParam("goodsId")long goodsId){

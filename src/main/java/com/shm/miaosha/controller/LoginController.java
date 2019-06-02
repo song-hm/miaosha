@@ -43,7 +43,7 @@ public class LoginController {
 
     @RequestMapping("/do_login")
     @ResponseBody
-    public Result<Boolean> doLogin(HttpServletResponse response, @Validated LoginVo loginVo){
+    public Result<String> doLogin(HttpServletResponse response, @Validated LoginVo loginVo){
         log.info(loginVo.toString());
 
         //参数校验
@@ -60,8 +60,8 @@ public class LoginController {
 //        }
 
         //登录
-        miaoshaUserService.login(response,loginVo);
+        String token = miaoshaUserService.login(response, loginVo);
 
-        return Result.success(true);
+        return Result.success(token);
     }
 }
