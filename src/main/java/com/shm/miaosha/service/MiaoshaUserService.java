@@ -53,12 +53,14 @@ public class MiaoshaUserService {
         if (user == null){
             throw new GlobalException(CodeMsg.MOBILE_NOT_EXIST);
         }
-        //更新数据库
+
+        //先更新数据库
         MiaoshaUser toBeUpdate = new MiaoshaUser();
         toBeUpdate.setId(id);
         toBeUpdate.setPassword(MD5Util.formPassToDBPass(passwordNew,user.getSalt()));
         miaoshaUserDao.update(toBeUpdate);
-        //处理缓存
+
+        //后处理缓存，注意顺序
         redisService.delete(MiaoshaUserKey.getById,""+id);
         user.setPassword(toBeUpdate.getPassword());
         redisService.set(MiaoshaUserKey.token,token,user);
