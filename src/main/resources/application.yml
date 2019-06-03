@@ -20,6 +20,16 @@ spring:
     poolMaxTotal: 1000
     poolMaxIdle: 500
     poolMaxWait: 500
+  #static
+  resources:
+    add-mappings: true
+    cache:
+      period: 3600
+    chain:
+      cache: true
+      enabled: true
+      html-application-cache: true
+    static-locations: classpath:/static/
 
 #    jedis:
 #      pool:
@@ -37,4 +47,3 @@ mybatis:
     default-statement-timeout: 3000
   mapper-locations:
     classpath: com.shm.miaosha.dao/*.xml
-

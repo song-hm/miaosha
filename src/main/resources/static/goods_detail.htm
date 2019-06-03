@@ -36,7 +36,7 @@
         </tr>
         <tr>
             <td>秒杀开始时间</td>
-            <td id="startTime"></td>
+            <td id="startDate"></td>
             <td>
                 <input type="hidden" id="remainSeconds"/>
                 <span id="miaoshaTip"></span>
@@ -69,7 +69,22 @@
 
     function doMiaosha() {
         $.ajax({
-            url:"",
+            url:"/miaosha/do_miaosha",
+            type:"POST",
+            data:{
+                goodsId:$("#goodsId").val(),
+            },
+            success:function (data) {
+                if (data.code == 0){
+                    window.location.href="/order_detail.htm?orderId="+data.data.id;
+                } else {
+                    layer.msg(data.msg);
+                }
+
+            },
+            error:function () {
+                layer.msg("客户端请求有误");
+            }
         })
     }
     function render(detail) {
@@ -81,7 +96,7 @@
             $("#userTip").hide();
             $("#goodsName").text(goods.goodsName);
             $("#goodsImg").attr("src",goods.goodsImg);
-            $("#startTime").text(new Date().format("yyyy-MM-dd-hh:mm:ss"));
+            $("#startDate").text(new Date(goods.startDate).format("yyyy-MM-dd-hh:mm:ss"));
             $("#remainSeconds").val(remainSeconds);
             $("#goodsId").val(goods.id);
             $("#goodsPrice").text(goods.goodsPrice);
@@ -106,7 +121,7 @@
                 if (data.code == 0){
                     render(data.data)
                 } else {
-                    layer.msg(data.msg());
+                    layer.msg(data.msg);
                 }
 
             },

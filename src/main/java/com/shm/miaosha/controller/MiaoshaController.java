@@ -5,18 +5,22 @@ import com.shm.miaosha.domain.MiaoshaUser;
 import com.shm.miaosha.domain.OrderInfo;
 import com.shm.miaosha.redis.RedisService;
 import com.shm.miaosha.result.CodeMsg;
+import com.shm.miaosha.result.Result;
 import com.shm.miaosha.service.GoodsService;
 import com.shm.miaosha.service.MiaoshaService;
 import com.shm.miaosha.service.MiaoshaUserService;
 import com.shm.miaosha.service.OrderService;
 import com.shm.miaosha.vo.GoodsVo;
+import com.sun.org.apache.bcel.internal.classfile.Code;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 
@@ -46,33 +50,39 @@ public class MiaoshaController {
     private MiaoshaService miaoshaService;
 
     //QPS 258.9  1000*10
-    @RequestMapping("/do_miaosha")
-    public String miaosha(Model model, MiaoshaUser user,
+
+    /**
+     * GET  POST 有什么区别？
+     * GET幂等 从服务端取数据
+     * POST 对服务端数据进行更改
+     * @param model
+     * @param user
+     * @param goodsId
+     * @return
+     */
+    @RequestMapping(value = "/do_miaosha",method = RequestMethod.POST)
+    @ResponseBody
+    public Result<OrderInfo> miaosha(Model model, MiaoshaUser user,
                           @RequestParam("goodsId")long goodsId){
-        if (user == null) {
-            return "login";
-        }
         model.addAttribute("user", user);
+        if (user == null) {
+            return Result.error(CodeMsg.SESSION_ERROR);
+        }
 
         //判断库存
         GoodsVo goods = goodsService.getGoodsVoByGoodsId(goodsId);
         Integer stockCount = goods.getStockCount();
         if (stockCount <= 0){
-            model.addAttribute("errmsg", CodeMsg.MIAO_SHA_OVER.getMsg());
-            return "miaosha_fail";
+            return Result.error(CodeMsg.MIAO_SHA_OVER);
         }
         //判断是否已经秒杀到了
         MiaoshaOrder order = orderService.getMiaoshaOrderByUserIdOrderId(user.getId(),goodsId);
         if (order != null){
-            model.addAttribute("errmsg", CodeMsg.REPEATE_MIAOSHA.getMsg());
-            return "miaosha_fail";
+            return Result.error(CodeMsg.REPEATE_MIAOSHA);
         }
 
         //减库存，下订单，写入秒杀订单
         OrderInfo orderInfo =miaoshaService.miaosha(user,goods);
-        model.addAttribute("orderInfo",orderInfo);
-        model.addAttribute("goods",goods);
-
-        return "order_detail";
+        return Result.success(orderInfo);
     }
 }

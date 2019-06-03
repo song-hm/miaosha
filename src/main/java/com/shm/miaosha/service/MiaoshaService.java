@@ -1,6 +1,5 @@
 package com.shm.miaosha.service;
 
-import com.shm.miaosha.domain.Goods;
 import com.shm.miaosha.domain.MiaoshaUser;
 import com.shm.miaosha.domain.OrderInfo;
 import com.shm.miaosha.vo.GoodsVo;
@@ -27,7 +26,6 @@ public class MiaoshaService {
     public OrderInfo miaosha(MiaoshaUser user, GoodsVo goods) {
         //减库存，下订单，写入秒杀订单
         goodsService.reduceStock(goods);
-
         //order_info miaosha_order
         return orderService.createOrder(user,goods);
     }
