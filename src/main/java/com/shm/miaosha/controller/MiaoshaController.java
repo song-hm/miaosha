@@ -5,10 +5,7 @@ import com.shm.miaosha.domain.MiaoshaUser;
 import com.shm.miaosha.domain.OrderInfo;
 import com.shm.miaosha.rabbitmq.MQSender;
 import com.shm.miaosha.rabbitmq.MiaoshaMessage;
-import com.shm.miaosha.redis.GoodsKey;
-import com.shm.miaosha.redis.MiaoshaKey;
-import com.shm.miaosha.redis.OrderKey;
-import com.shm.miaosha.redis.RedisService;
+import com.shm.miaosha.redis.*;
 import com.shm.miaosha.result.CodeMsg;
 import com.shm.miaosha.result.Result;
 import com.shm.miaosha.service.GoodsService;
@@ -29,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
@@ -192,14 +190,24 @@ public class MiaoshaController implements InitializingBean {
 
     @RequestMapping(value = "/path")
     @ResponseBody
-    public Result<String> getMiaoshaPath(Model model, MiaoshaUser user,
+    public Result<String> getMiaoshaPath(MiaoshaUser user, HttpServletRequest request,
                                          @RequestParam("goodsId") long goodsId,
-                                         @RequestParam("verifyCode")int verifyCode) {
-        model.addAttribute("user", user);
+                                         @RequestParam(value = "verifyCode",defaultValue = "0")int verifyCode) {
         if (user == null) {
             return Result.error(CodeMsg.SESSION_ERROR);
         }
 
+        //查询访问次数 5秒钟访问5次
+        String uri = request.getRequestURI();
+        String key = uri + "_" + user.getId();
+        Integer count = redisService.get(AccessKey.access, key, Integer.class);
+        if (count == null){
+            redisService.set(AccessKey.access, key, 1);
+        }else if (count < 5){
+            redisService.incr(AccessKey.access,key);
+        }else {
+            return Result.error(CodeMsg.ACCESS_LIMIT_REACHED);
+        }
         //验证码校验
         boolean check = miaoshaService.checkVerifyCode(user,goodsId,verifyCode);
         if (!check){
