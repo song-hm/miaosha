@@ -1,5 +1,6 @@
 package com.shm.miaosha.controller;
 
+import com.shm.miaosha.access.AccessLimit;
 import com.shm.miaosha.domain.MiaoshaOrder;
 import com.shm.miaosha.domain.MiaoshaUser;
 import com.shm.miaosha.domain.OrderInfo;
@@ -176,6 +177,7 @@ public class MiaoshaController implements InitializingBean {
      * @param goodsId
      * @return
      */
+    @AccessLimit(seconds=5,maxCount=10,needLogin=true)
     @RequestMapping(value = "/result")
     @ResponseBody
     public Result<Long> miaoshaResult(Model model, MiaoshaUser user,
@@ -188,26 +190,16 @@ public class MiaoshaController implements InitializingBean {
         return Result.success(result);
     }
 
+    @AccessLimit(seconds=5,maxCount=5,needLogin=true)
     @RequestMapping(value = "/path")
     @ResponseBody
     public Result<String> getMiaoshaPath(MiaoshaUser user, HttpServletRequest request,
                                          @RequestParam("goodsId") long goodsId,
-                                         @RequestParam(value = "verifyCode",defaultValue = "0")int verifyCode) {
+                                         @RequestParam(value = "verifyCode")int verifyCode) {
         if (user == null) {
             return Result.error(CodeMsg.SESSION_ERROR);
         }
 
-        //查询访问次数 5秒钟访问5次
-        String uri = request.getRequestURI();
-        String key = uri + "_" + user.getId();
-        Integer count = redisService.get(AccessKey.access, key, Integer.class);
-        if (count == null){
-            redisService.set(AccessKey.access, key, 1);
-        }else if (count < 5){
-            redisService.incr(AccessKey.access,key);
-        }else {
-            return Result.error(CodeMsg.ACCESS_LIMIT_REACHED);
-        }
         //验证码校验
         boolean check = miaoshaService.checkVerifyCode(user,goodsId,verifyCode);
         if (!check){

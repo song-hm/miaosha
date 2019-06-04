@@ -1,5 +1,6 @@
 package com.shm.miaosha.config;
 
+import com.shm.miaosha.access.UserContext;
 import com.shm.miaosha.domain.MiaoshaUser;
 import com.shm.miaosha.redis.MiaoshaUserKey;
 import com.shm.miaosha.service.MiaoshaUserService;
@@ -35,30 +36,7 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver{
 
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-        HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
-        HttpServletResponse response = webRequest.getNativeResponse(HttpServletResponse.class);
-
-        String paramToken = request.getParameter(MiaoshaUserService.COOKIE_NAME_TOKEN);
-        String cookieToken = getCookieValue(request,MiaoshaUserService.COOKIE_NAME_TOKEN);
-
-        if (StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken)){
-            return null;
-        }
-        String token = StringUtils.isEmpty(paramToken) ? cookieToken : paramToken;
-        MiaoshaUser user = miaoshaUserService.getByToken(response,token);
-        return user;
+        return UserContext.getUser();
     }
 
-    private String getCookieValue(HttpServletRequest request, String cookieNameToken) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null || cookies.length <= 0){
-            return null;
-        }
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(cookieNameToken)){
-                return cookie.getValue();
-            }
-        }
-        return null;
-    }
 }
