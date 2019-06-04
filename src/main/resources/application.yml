@@ -4,6 +4,7 @@ spring:
     prefix:
       classpath: /templates/
     suffix: .html
+    cache: false
   #druid
   datasource:
     url: jdbc:mysql://192.168.25.132:3306/miaosha?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
@@ -30,7 +31,26 @@ spring:
       enabled: true
       html-application-cache: true
     static-locations: classpath:/static/
-
+  #rabbitmq
+  rabbitmq:
+    host: 192.168.25.132
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    listener:
+      direct:
+        retry:
+          max-attempts: 3
+          enabled: true
+          initial-interval: 1000
+          multiplier: 1.0
+      simple:
+        auto-startup: true
+        prefetch: 1
+        concurrency: 10
+        max-concurrency: 10
+        default-requeue-rejected: true
 #    jedis:
 #      pool:
 #        max-active: 10

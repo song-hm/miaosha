@@ -1,6 +1,7 @@
 package com.shm.miaosha.controller;
 
 import com.shm.miaosha.domain.User;
+import com.shm.miaosha.rabbitmq.MQSender;
 import com.shm.miaosha.redis.RedisService;
 import com.shm.miaosha.redis.UserKey;
 import com.shm.miaosha.result.CodeMsg;
@@ -26,6 +27,40 @@ public class SampleController {
 
     @Autowired
     private RedisService redisService;
+
+    @Autowired
+    private MQSender mqSender;
+/*
+
+    @RequestMapping("/mq")
+    @ResponseBody
+    public Result<String> mq(){
+        mqSender.send("hello,rabbitmq");
+        return Result.success("hello!");
+    }
+
+    @RequestMapping("/mq/topic")
+    @ResponseBody
+    public Result<String> mqTopic(){
+        mqSender.sendTopic("hello,rabbitmq");
+        return Result.success("hello!");
+    }
+
+    //swagger
+    @RequestMapping("/mq/fanout")
+    @ResponseBody
+    public Result<String> mqFanout(){
+        mqSender.sendFanout("hello,rabbitmq");
+        return Result.success("hello!");
+    }
+
+    @RequestMapping("/mq/headers")
+    @ResponseBody
+    public Result<String> mqHeaders(){
+        mqSender.sendHeaders("hello,rabbitmq");
+        return Result.success("hello!");
+    }
+*/
 
     @RequestMapping("/thymeleaf")
     public String thymeleaf(Model model){

@@ -50,16 +50,22 @@ public class OrderService {
         orderInfo.setGoodsName(goods.getGoodsName());
         orderInfo.setOrderChannel(1);
 
-        long orderId = orderDao.insert(orderInfo);
+        orderDao.insert(orderInfo);
 
         MiaoshaOrder miaoshaOrder = new MiaoshaOrder();
         miaoshaOrder.setGoodsId(goods.getId());
         miaoshaOrder.setUserId(user.getId());
-        miaoshaOrder.setOrderId(orderId);
+        miaoshaOrder.setOrderId(orderInfo.getId());
         orderDao.insertMiaoshaOrder(miaoshaOrder);
 
         //写入缓存
         redisService.set(OrderKey.getOrderByUidGid,""+user.getId()+"_"+goods.getId(),miaoshaOrder);
         return orderInfo;
+    }
+
+
+    public void deleteOrders() {
+        orderDao.deleteOrders();
+        orderDao.deleteMiaoshaOrders();
     }
 }
