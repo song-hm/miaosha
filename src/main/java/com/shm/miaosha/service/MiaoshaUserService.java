@@ -39,10 +39,9 @@ public class MiaoshaUserService {
         }
 
         //取数据库
-
         user = miaoshaUserDao.getById(id);
         if (user != null){
-            redisService.set(MiaoshaUserKey.getById,""+id,MiaoshaUser.class);
+            redisService.set(MiaoshaUserKey.getById,""+id,user);
         }
         return user;
     }

@@ -5,6 +5,8 @@ import com.shm.miaosha.domain.MiaoshaUser;
 import com.shm.miaosha.domain.OrderInfo;
 import com.shm.miaosha.redis.MiaoshaKey;
 import com.shm.miaosha.redis.RedisService;
+import com.shm.miaosha.util.MD5Util;
+import com.shm.miaosha.util.UUIDUtil;
 import com.shm.miaosha.vo.GoodsVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -69,5 +71,19 @@ public class MiaoshaService {
     public void reset(List<GoodsVo> goodsList) {
         goodsService.resetStock(goodsList);
         orderService.deleteOrders();
+    }
+
+    public String createPath(MiaoshaUser user, long goodsId) {
+        String str = MD5Util.md5(UUIDUtil.uuid()+"123456");
+        redisService.set(MiaoshaKey.getMiaoshaPath,""+user.getId()+"_"+goodsId,str);
+        return str;
+    }
+
+    public boolean checkPath(MiaoshaUser user, long goodsId, String path) {
+        if (user == null || path == null){
+            return false;
+        }
+        String pathOld = redisService.get(MiaoshaKey.getMiaoshaPath, "" + user.getId() + "_" + goodsId, String.class);
+        return path.equals(pathOld);
     }
 }

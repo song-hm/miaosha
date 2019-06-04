@@ -15,6 +15,8 @@ import com.shm.miaosha.service.GoodsService;
 import com.shm.miaosha.service.MiaoshaService;
 import com.shm.miaosha.service.MiaoshaUserService;
 import com.shm.miaosha.service.OrderService;
+import com.shm.miaosha.util.MD5Util;
+import com.shm.miaosha.util.UUIDUtil;
 import com.shm.miaosha.vo.GoodsVo;
 import com.sun.org.apache.bcel.internal.classfile.Code;
 import org.slf4j.Logger;
@@ -23,10 +25,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -105,13 +104,20 @@ public class MiaoshaController implements InitializingBean {
      * @param goodsId
      * @return
      */
-    @RequestMapping(value = "/do_miaosha", method = RequestMethod.POST)
+    @RequestMapping(value = "/{path}/do_miaosha", method = RequestMethod.POST)
     @ResponseBody
     public Result<Integer> miaosha(Model model, MiaoshaUser user,
-                                   @RequestParam("goodsId") long goodsId) {
+                                   @RequestParam("goodsId") long goodsId,
+                                   @PathVariable("path")String path) {
         model.addAttribute("user", user);
         if (user == null) {
             return Result.error(CodeMsg.SESSION_ERROR);
+        }
+
+        //验证path
+        boolean check = miaoshaService.checkPath(user,goodsId,path);
+        if (!check){
+            return Result.error(CodeMsg.REQUEST_ILLEGAL);
         }
 
         //内存标记减少Redis访问
@@ -178,5 +184,17 @@ public class MiaoshaController implements InitializingBean {
         }
         long result = miaoshaService.getMiaoshaResult(user.getId(),goodsId);
         return Result.success(result);
+    }
+
+    @RequestMapping(value = "/path")
+    @ResponseBody
+    public Result<String> getMiaoshaPath(Model model, MiaoshaUser user,
+                                         @RequestParam("goodsId") long goodsId) {
+        model.addAttribute("user", user);
+        if (user == null) {
+            return Result.error(CodeMsg.SESSION_ERROR);
+        }
+        String path = miaoshaService.createPath(user,goodsId);
+        return Result.success(path);
     }
 }
